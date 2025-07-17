@@ -37,9 +37,9 @@ def find_duplicates_and_email():
     filtered_df = filtered_df.dropna(subset=['CreatedDate'])
 
     # Debug logging
-    print("Filtered rows:", len(filtered_df))
-    print("NaT in CreatedDate:", filtered_df['CreatedDate'].isna().sum())
-    print(filtered_df[['Code', 'CreatedDate']].head(5))
+    # print("Filtered rows:", len(filtered_df))
+    # print("NaT in CreatedDate:", filtered_df['CreatedDate'].isna().sum())
+    # print(filtered_df[['Code', 'CreatedDate']].head(5))
 
     if filtered_df.empty:
         logger.warning("Filtered DataFrame is empty after applying pattern and date cleanup.")
@@ -74,7 +74,7 @@ def find_duplicates_and_email():
     if not recent_duplicates_df.empty:
         message = ""
         for index, row in recent_duplicates_df.iterrows():
-            message += f"{config['bspace_url']}/d2l/home/{row['OrgUnitId']} - {row['Code']}" + "<br>"
+            message += f"{config['bspace_url']}/d2l/lp/orgUnitEditor/6606/search?searchKeyword={row['ModifiedCode']} - {row['Code']}" + "<br>"
         
         send_email(message, config["send_to"], config["from"])
     else:
