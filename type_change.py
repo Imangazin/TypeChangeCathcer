@@ -9,6 +9,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import zipfile
 from logger_config import logger
+from html import escape
 
 # Function to check if the string matches the pattern and length
 def matches_pattern(s):
@@ -74,7 +75,9 @@ def find_duplicates_and_email():
     if not recent_duplicates_df.empty:
         message = ""
         for index, row in recent_duplicates_df.iterrows():
-            message += f"{config['bspace_url']}/d2l/lp/orgUnitEditor/6606/search?searchKeyword={row['ModifiedCode']} - {row['Code']}" + "<br>"
+            url = f"{config['bspace_url']}/d2l/lp/orgUnitEditor/6606/search?searchKeyword={row['ModifiedCode']}"
+            label = escape(row['Code'])
+            message += f'<a href="{url}">{label}</a><br>'
         
         send_email(message, config["send_to"], config["from"])
     else:
