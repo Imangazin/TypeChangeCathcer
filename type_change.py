@@ -7,6 +7,8 @@ import re
 from datetime import datetime, timedelta, timezone
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from email.mime.base import MIMEBase
+from email import encoders
 import zipfile
 from logger_config import logger
 from html import escape
@@ -111,6 +113,15 @@ def send_email(sections, to_email, from_email):
 
     # Attach the HTML body to the message
     msg.attach(MIMEText(html_body, 'html'))
+
+    attachment_path = "files/recent_duplicates_output.csv"
+    if os.path.exists(attachment_path):
+        with open(attachment_path, "rb") as f:
+            part = MIMEBase("application", "octet-stream")
+            part.set_payload(f.read())
+            encoders.encode_base64(part)
+            part.add_header("Content-Disposition", f'attachment; filename="{os.path.basename(attachment_path)}"')
+            msg.attach(part)
 
     try:
         with os.popen(f"sendmail -t", "w") as p:
