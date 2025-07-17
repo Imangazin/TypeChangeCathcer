@@ -31,8 +31,19 @@ def find_duplicates_and_email():
     # Read the CSV file into a DataFrame
     df = pd.read_csv('files/OrganizationalUnits.csv')
 
-    # Filter the DataFrame based on the pattern and length in a specific column
+    # Parse CreatedDate and drop invalid rows
+    df['CreatedDate'] = pd.to_datetime(df['CreatedDate'], errors='coerce', utc=True)
     filtered_df = df[df['Code'].apply(matches_pattern)].copy()
+    filtered_df = filtered_df.dropna(subset=['CreatedDate'])
+
+    # Debug logging
+    print("Filtered rows:", len(filtered_df))
+    print("NaT in CreatedDate:", filtered_df['CreatedDate'].isna().sum())
+    print(filtered_df[['Code', 'CreatedDate']].head(5))
+
+    if filtered_df.empty:
+        logger.warning("Filtered DataFrame is empty after applying pattern and date cleanup.")
+        return
 
     # Remove duplicates based on 'Code', keeping the entry with the most recent 'CreatedDate'.
     # This is to avoid the merged courses.
@@ -199,9 +210,3 @@ unzip_file("files/org_units.zip", "files")
 
 # Find duplicates and email
 find_duplicates_and_email()
-
-
-
-
-
-
