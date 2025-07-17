@@ -10,6 +10,7 @@ from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
 import zipfile
+import subprocess
 from logger_config import logger
 from html import escape
 
@@ -126,8 +127,11 @@ def send_email(sections, to_email, from_email):
             msg.attach(part)
 
     try:
-        with os.popen(f"sendmail -t", "w") as p:
-            p.write(msg.as_string())
+        process = subprocess.Popen(
+            ['sendmail', '-t'],
+            stdin=subprocess.PIPE
+        )
+        process.communicate(msg.as_bytes())
         print("Email sent successfully.")
     except Exception as e:
         print("Error sending email:", str(e))
