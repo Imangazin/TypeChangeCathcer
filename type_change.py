@@ -13,6 +13,7 @@ import zipfile
 import subprocess
 from logger_config import logger
 from html import escape
+from email import policy
 
 # Function to check if the string matches the pattern and length
 def matches_pattern(s):
@@ -107,12 +108,12 @@ def send_email(sections, to_email, from_email):
     """  # The HTML content of the email
 
     # Create the MIME message
-    msg = MIMEMultipart("mixed")
+    msg = MIMEMultipart("mixed", policy=policy.SMTP)
     msg['From'] = from_email
     msg['To'] = to_email
     msg['Subject'] = subject
 
-    alt_part = MIMEMultipart("alternative")
+    alt_part = MIMEMultipart("alternative", policy=policy.SMTP)
     html_part = MIMEText(html_body, 'html', 'utf-8')
     html_part.add_header('Content-Transfer-Encoding', 'quoted-printable')
     alt_part.attach(html_part)
@@ -132,7 +133,7 @@ def send_email(sections, to_email, from_email):
             ['sendmail', '-t'],
             stdin=subprocess.PIPE
         )
-        process.communicate(msg.as_bytes())
+        process.communicate(msg.as_bytes(policy=policy.SMTP))
         print("Email sent successfully.")
     except Exception as e:
         print("Error sending email:", str(e))
