@@ -77,8 +77,6 @@ def find_duplicates_and_email():
     if not recent_duplicates_df.empty:
         message = ""
         for index, row in recent_duplicates_df.iterrows():
-            url = f"{config['bspace_url']}/d2l/lp/orgUnitEditor/6606/search?searchKeyword={row['ModifiedCode']}"
-            label = escape(row['Code'])
             message += f"{row['Code']}\n"
         
         send_email(message, config["send_to"], config["from"])
@@ -124,10 +122,9 @@ def send_email(sections, to_email, from_email):
     try:
         with os.popen(f"sendmail -t", "w") as p:
             p.write(msg.as_string())
-        print("Email sent successfully.")
+        logger.info("Email sent successfully.")
     except Exception as e:
-        print("Error sending email:", str(e))
-
+        logger.error("Error sending email:", str(e))
 
 
 # Get access token and refresh token
@@ -160,6 +157,7 @@ def call_with_auth(method, endpoint, access_token, data=None):
         response.raise_for_status()
         return response
     except Exception as e:
+        logger.error('Error with API call')
         return None
 
 # downloads Data Hub report
