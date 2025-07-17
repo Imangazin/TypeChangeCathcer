@@ -10,10 +10,8 @@ from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
 import zipfile
-import subprocess
 from logger_config import logger
 from html import escape
-from email import policy
 
 # Function to check if the string matches the pattern and length
 def matches_pattern(s):
@@ -81,7 +79,7 @@ def find_duplicates_and_email():
         for index, row in recent_duplicates_df.iterrows():
             url = f"{config['bspace_url']}/d2l/lp/orgUnitEditor/6606/search?searchKeyword={row['ModifiedCode']}"
             label = escape(row['Code'])
-            message += f'<a href="{url}">{label}</a><br>'
+            message += f"{row['Code']}\n"
         
         send_email(message, config["send_to"], config["from"])
     else:
@@ -92,32 +90,27 @@ def find_duplicates_and_email():
 def send_email(sections, to_email, from_email):
     # Define email components
     subject = "Duplicate Section Information Detected"
-    html_body = f"""
-    <html>
-    <body>
-        <h3>Greetings from Section Type Change Catcher Script,</h3>
-        <p>This is an automatic email message. Please see the duplicate section information below:</p>
-        {sections}
-        <aside>
-            Note: This script will be running every Thursday at 9:00 am.
-        </aside>        
-        <p>Thank you.</p>
-        <p>Cheers,</p>
-    </body>
-    </html>
-    """  # The HTML content of the email
+    text_body = f"""
+    Greetings from Section Type Change Catcher Script,
+
+    This is an automatic email message. Please see the duplicate section information below:
+
+    {sections}
+
+    Note: This script will be running every Thursday at 9:00 am.
+
+    Thank you.
+    Cheers,
+    """
 
     # Create the MIME message
-    msg = MIMEMultipart("mixed", policy=policy.SMTP)
+    msg = MIMEMultipart()
     msg['From'] = from_email
     msg['To'] = to_email
     msg['Subject'] = subject
 
-    alt_part = MIMEMultipart("alternative", policy=policy.SMTP)
-    html_part = MIMEText(html_body, 'html', 'utf-8')
-    html_part.add_header('Content-Transfer-Encoding', 'quoted-printable')
-    alt_part.attach(html_part)
-    msg.attach(alt_part)
+    # Attach the plain text body to the message
+    msg.attach(MIMEText(text_body, 'plain'))
 
     attachment_path = "files/recent_duplicates_output.csv"
     if os.path.exists(attachment_path):
@@ -129,11 +122,8 @@ def send_email(sections, to_email, from_email):
             msg.attach(part)
 
     try:
-        process = subprocess.Popen(
-            ['sendmail', '-t'],
-            stdin=subprocess.PIPE
-        )
-        process.communicate(msg.as_bytes(policy=policy.SMTP))
+        with os.popen(f"sendmail -t", "w") as p:
+            p.write(msg.as_string())
         print("Email sent successfully.")
     except Exception as e:
         print("Error sending email:", str(e))
