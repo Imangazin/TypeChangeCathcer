@@ -106,13 +106,15 @@ def send_email(sections, to_email, from_email):
     """  # The HTML content of the email
 
     # Create the MIME message
-    msg = MIMEMultipart('alternative')
+    msg = MIMEMultipart()
     msg['From'] = from_email
     msg['To'] = to_email
     msg['Subject'] = subject
 
-    # Attach the HTML body to the message
-    msg.attach(MIMEText(html_body, 'html'))
+    # Attach the HTML body to the message with quoted-printable encoding
+    html_part = MIMEText(html_body, 'html', 'utf-8')
+    html_part.add_header('Content-Transfer-Encoding', 'quoted-printable')
+    msg.attach(html_part)
 
     attachment_path = "files/recent_duplicates_output.csv"
     if os.path.exists(attachment_path):
