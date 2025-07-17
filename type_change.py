@@ -95,7 +95,7 @@ def send_email(sections, to_email, from_email):
     <body>
         <h3>Greetings from Section Type Change Catcher Script,</h3>
         <p>This is an automatic email message. Please see the duplicate section information below:</p>
-        <p><mark>{sections}</mark></p>
+        <p>{sections}</p>
         <aside>
             Note: This script will be running every Thursday at 9:00 am.
         </aside>        
